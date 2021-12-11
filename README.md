@@ -1,9 +1,15 @@
 # adpbulk
 
 # Summary
-Performs pseudobulking of an AnnData object based on columns available in the `.obs` dataframe. This was originally intended to be used to pseudo-bulk single-cell RNA-seq data to higher order combinations of the data as to use existing RNA-seq differential expression tools such as edgeR and DESeq2. An example usage of this would be pseudobulking cells based on their cluster, sample of origin, or CRISPRi guide identity. This is intended to work on both individual categories (i.e. one of the examples) or combinations of categories (two of the three, etc.)
+Performs pseudobulking of an `AnnData` object based on columns available in the `.obs` dataframe. This was originally intended to be used to pseudo-bulk single-cell RNA-seq data to higher order combinations of the data as to use existing RNA-seq differential expression tools such as `edgeR` and `DESeq2`. An example usage of this would be pseudobulking cells based on their cluster, sample of origin, or CRISPRi guide identity. This is intended to work on both individual categories (i.e. one of the examples) or combinations of categories (two of the three, etc.)
 
 # Installation
+## From PyPI
+```bash
+pip install adpbulk
+```
+
+## From Github
 ```bash
 git clone https://github.com/noamteyssier/adpbulk
 cd adpbulk
@@ -45,7 +51,7 @@ sample_meta = adpb.get_meta()
 ```
 
 ## Pseudo-Bulk using raw counts
-Some differential expression software expects the counts to be untransformed counts. SCANPY uses the `.raw` attribute in its AnnData objects to store the initial AnnData object before transformation. If you'd like to perform the pseudo-bulk aggregation using these raw counts you can provide the `use_raw=True` flag. 
+Some differential expression software expects the counts to be untransformed counts. SCANPY uses the `.raw` attribute in its `AnnData` objects to store the initial `AnnData` object before transformation. If you'd like to perform the pseudo-bulk aggregation using these raw counts you can provide the `use_raw=True` flag. 
 ```python3
 from adpbulk import ADPBulk
 
@@ -91,8 +97,8 @@ sample_meta = adpb.get_meta()
 ```
 
 
-## Example AnnData Function
-Here is a function to generate an AnnData object to test the module or to play with the object if unfamiliar.
+## Example `AnnData` Function
+Here is a function to generate an `AnnData` object to test the module or to play with the object if unfamiliar.
 ```python3
 import numpy as np
 import pandas as pd
