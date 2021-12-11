@@ -1,7 +1,7 @@
 """
 Class for Pseudobulking
 """
-from typing import List, Union
+from typing import Union, List
 import itertools as it
 import numpy as np
 import pandas as pd
@@ -13,11 +13,32 @@ class ADPBulk:
     def __init__(
             self,
             adat: ad.AnnData,
-            groupby: Union[List, str],
+            groupby: Union[List[str], str],
             method: str = "sum",
             name_delim: str = "-",
             group_delim: str = ".",
             use_raw: bool = False):
+        """
+        Class of Pseudo-Bulking `AnnData` objects based on categorical variables
+        found in the `.obs` attribute
+
+        inputs:
+            adat: anndata.AnnData
+                The `AnnData` object to process
+            groupby: Union[List[str], str]
+                The categories to group by. Can provide as a single value
+                or a list of values.
+            method: str
+                The method to aggregate with (sum[default], mean, median)
+            name_delim: str
+                The delimiter to use when grouping multiple categories together.
+                example: 'cat1{delim}cat2'
+            group_delim: str
+                The delimiter to use for adding the value to its category.
+                example: 'cat{delim}value'
+            use_raw: bool
+                Whether to use the `.raw` attribute on the `AnnData` object
+        """
 
         self.agg_methods = {
             "sum": np.sum,
