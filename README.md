@@ -15,11 +15,12 @@ pytest -v
 This package is intended to be used as a python module. 
 
 ## Single Category Pseudo-Bulk
+The simplest use case is to aggregate on a single category. This will aggregate all the observations belonging to the same class within the category and return a pseudo-bulked matrix with dimensions equal to the number of values within the category. 
 ```python3
 from adpbulk import ADPBulk
 
 # initialize the object
-adpb = ADPBulk(adat, "category")
+adpb = ADPBulk(adat, "category_name")
 
 # perform the pseudobulking
 pseudobulk_matrix = adpb.fit_transform()
@@ -29,6 +30,7 @@ sample_meta = adpb.get_meta()
 ```
 
 ## Multiple Category Pseudo-Bulk
+A common use case is to aggregate on multiple categories. This will aggregate all observations beloging to the combination of classes within two categories and return a pseudo-bulked matrix with dimensions equal to the number of values of nonzero intersections between categories. 
 ```python3
 from adpbulk import ADPBulk
 
@@ -58,6 +60,7 @@ sample_meta = adpb.get_meta()
 ```
 
 ## Alternative Aggregation Options
+It may also be useful to aggregate using an alternative function besides the sum - this option will allow you to choose between sum, mean, and median as an aggregation function.
 ```python3
 from adpbulk import ADPBulk
 
@@ -89,7 +92,7 @@ sample_meta = adpb.get_meta()
 
 
 ## Example AnnData Function
-Here is a function to generate
+Here is a function to generate an AnnData object to test the module or to play with the object if unfamiliar.
 ```python3
 import numpy as np
 import pandas as pd
@@ -99,8 +102,13 @@ def build_adat():
     """
     creates an anndata for testing
     """
-    mat = np.random.random((SIZE_N, SIZE_M))
+    # generates random values (mock transformed data)
+	mat = np.random.random((SIZE_N, SIZE_M))
+
+	# generates random values (mock raw count data)
     raw = np.random.randint(0, 1000, (SIZE_N, SIZE_M))
+
+	# creates the observations and categories
     obs = pd.DataFrame({
         "cell": [f"b{idx}" for idx in np.arange(SIZE_N)],
         "cA": np.random.choice(np.random.choice(5)+1, SIZE_N),
@@ -108,6 +116,8 @@ def build_adat():
         "cC": np.random.choice(np.random.choice(5)+1, SIZE_N),
         "cD": np.random.choice(np.random.choice(5)+1, SIZE_N),
         }).set_index("cell")
+
+	# creates the variables (genes) and categories
     var = pd.DataFrame({
         "symbol": [f"g{idx}" for idx in np.arange(SIZE_M)],
         "cA": np.random.choice(np.random.choice(5)+1, SIZE_M),
@@ -115,16 +125,23 @@ def build_adat():
         "cC": np.random.choice(np.random.choice(5)+1, SIZE_M),
         "cD": np.random.choice(np.random.choice(5)+1, SIZE_M),
         }).set_index("symbol")
-    adat = ad.AnnData(
+    
+	# Creates the `AnnData` object
+	adat = ad.AnnData(
             X=mat,
             obs=obs,
             var=var)
-    adat_raw = ad.AnnData(
+    
+	# Creates an `AnnData` object to simulate the `.raw` attribute
+	adat_raw = ad.AnnData(
             X=raw,
             obs=obs,
             var=var)
-    adat.raw = adat_raw
-    return adat
+    
+	# Sets the `.raw` attribute
+	adat.raw = adat_raw
+    
+	return adat
 
 adat = build_adat()
 ```
