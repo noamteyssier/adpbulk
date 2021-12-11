@@ -16,3 +16,6 @@ dependencies = [
 	"tqdm",
 	"pytest"
 ]
+
+[project.urls]
+Source = "https://github.com/noamteyssier/adpbulk"
