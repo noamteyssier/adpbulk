@@ -1,0 +1,19 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "adpbulk"
+authors = [{name = "Noam Teyssier", email = "noam.teyssier@ucsf.edu"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version", "description"]
+dependencies = [
+	"anndata>=0.7.4",
+	"numpy>=1.17.0",
+	"pandas>=0.21",
+	"matplotlib>=3.1.2",
+	"tqdm",
+	"pytest"
+]
