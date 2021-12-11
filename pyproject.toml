@@ -13,7 +13,6 @@ dependencies = [
 	"anndata>=0.7.4",
 	"numpy>=1.17.0",
 	"pandas>=0.21",
-	"matplotlib>=3.1.2",
 	"tqdm",
 	"pytest"
 ]
