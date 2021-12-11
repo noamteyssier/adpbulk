@@ -90,12 +90,12 @@ sample_meta = adpb.get_meta()
 
 ## Example AnnData Function
 Here is a function to generate
-```
+```python3
 import numpy as np
 import pandas as pd
 import anndata as ad
 
-def build_adat() -> ad.AnnData:
+def build_adat():
     """
     creates an anndata for testing
     """
