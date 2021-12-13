@@ -225,6 +225,9 @@ class ADPBulk:
                 pairs = tuple([pairs])
             if pairs in self.grouping_masks:
                 matrix.append(self._get_agg(self.grouping_masks[pairs]))
+        
+        # stack all observations into single matrix
+        matrix = np.vstack(matrix)
 
         self.matrix = pd.DataFrame(
             matrix,
