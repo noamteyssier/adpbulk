@@ -104,7 +104,7 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 
-def build_adat():
+def build_adat(SIZE_N=100, SIZE_M=100):
     """
     creates an anndata for testing
     """
