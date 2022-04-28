@@ -77,6 +77,30 @@ def test_init_raw():
     assert True
 
 
+def test_adjusted_raw():
+    """
+    tests whether the ADPBulk object can be run correctly
+    after the original adat changes but the raw does not
+    """
+    adat = build_adat()
+    mask = np.random.random(SIZE_M) < 0.3
+    adat = adat[:, mask].copy()
+
+    # confirm that `var` shapes are incompatible
+    assert adat.shape[1] != adat.raw.shape[1]
+
+    # tests singular group conditions
+    for group in adat.obs.columns:
+        adpb = ADPBulk(adat, groupby=group, use_raw=True)
+        adpb.fit_transform()
+
+    # tests multiple group conditions
+    adpb = ADPBulk(adat, groupby=["cA", "cD"], use_raw=True)
+    adpb.fit_transform()
+
+    assert True
+
+
 def test_init_missing_group():
     """
     tests whether the ADPBulk object be init incorrectly
