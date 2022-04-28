@@ -83,15 +83,20 @@ def test_adjusted_raw():
     after the original adat changes but the raw does not
     """
     adat = build_adat()
-    mask = np.random.random(adat.shape[1]) < 0.7
+    mask = np.random.random(SIZE_M) < 0.3
     adat = adat[:, mask].copy()
+
+    # confirm that `var` shapes are incompatible
+    assert adat.shape[1] != adat.raw.shape[1]
 
     # tests singular group conditions
     for group in adat.obs.columns:
-        _ = ADPBulk(adat, groupby=group, use_raw=True)
+        adpb = ADPBulk(adat, groupby=group, use_raw=True)
+        adpb.fit_transform()
 
     # tests multiple group conditions
-    _ = ADPBulk(adat, groupby=["cA", "cD"], use_raw=True)
+    adpb = ADPBulk(adat, groupby=["cA", "cD"], use_raw=True)
+    adpb.fit_transform()
 
     assert True
 
