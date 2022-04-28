@@ -77,6 +77,25 @@ def test_init_raw():
     assert True
 
 
+def test_adjusted_raw():
+    """
+    tests whether the ADPBulk object can be run correctly
+    after the original adat changes but the raw does not
+    """
+    adat = build_adat()
+    mask = np.random.random(adat.shape[1]) < 0.7
+    adat = adat[:, mask].copy()
+
+    # tests singular group conditions
+    for group in adat.obs.columns:
+        _ = ADPBulk(adat, groupby=group, use_raw=True)
+
+    # tests multiple group conditions
+    _ = ADPBulk(adat, groupby=["cA", "cD"], use_raw=True)
+
+    assert True
+
+
 def test_init_missing_group():
     """
     tests whether the ADPBulk object be init incorrectly
