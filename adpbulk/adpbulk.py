@@ -164,6 +164,15 @@ class ADPBulk:
             mat = self.adat.X[mask]
         return self.agg_methods[self.method](mat, axis=0)
 
+    def _get_var(self) -> np.ndarray:
+        """
+        return the var names using the given scheme (normal/raw)
+        """
+        if self.use_raw:
+            return self.adat.raw.var.index.values
+        else:
+            return self.adat.var.index.values
+
     def _prepare_meta(self, pairs: tuple) -> dict:
         """
         defines the meta values for the pairs
@@ -232,7 +241,7 @@ class ADPBulk:
         self.matrix = pd.DataFrame(
             matrix,
             index=self.meta.SampleName.values,
-            columns=self.adat.var.index.values)
+            columns=self._get_var())
 
         self._istransform = True
         return self.matrix
