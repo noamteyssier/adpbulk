@@ -11,13 +11,14 @@ from tqdm import tqdm
 
 class ADPBulk:
     def __init__(
-            self,
-            adat: ad.AnnData,
-            groupby: Union[List[str], str],
-            method: str = "sum",
-            name_delim: str = "-",
-            group_delim: str = ".",
-            use_raw: bool = False):
+        self,
+        adat: ad.AnnData,
+        groupby: Union[List[str], str],
+        method: str = "sum",
+        name_delim: str = "-",
+        group_delim: str = ".",
+        use_raw: bool = False,
+    ):
         """
         Class of Pseudo-Bulking `AnnData` objects based on categorical variables
         found in the `.obs` attribute
@@ -40,10 +41,7 @@ class ADPBulk:
                 Whether to use the `.raw` attribute on the `AnnData` object
         """
 
-        self.agg_methods = {
-            "sum": np.sum,
-            "mean": np.mean,
-            "median": np.median}
+        self.agg_methods = {"sum": np.sum, "mean": np.mean, "median": np.median}
 
         self.adat = adat
         self.groupby = groupby
@@ -113,7 +111,8 @@ class ADPBulk:
         """
         if self.method not in self.agg_methods.keys():
             raise ValueError(
-                f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}")
+                f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}"
+            )
 
     def _validate_raw(self):
         """
@@ -122,8 +121,8 @@ class ADPBulk:
         """
         if self.use_raw and self.adat.raw is None:
             raise AttributeError(
-                "use_raw provided, but no raw field is found in AnnData")
-
+                "use_raw provided, but no raw field is found in AnnData"
+            )
 
     def _fit_indices(self):
         """
@@ -133,7 +132,8 @@ class ADPBulk:
             unique_values = np.unique(self.adat.obs[group].values)
             self.group_idx[group] = {
                 uv: set(np.flatnonzero(self.adat.obs[group].values == uv))
-                    for uv in tqdm(unique_values, desc=f"fitting indices: {group}")}
+                for uv in tqdm(unique_values, desc=f"fitting indices: {group}")
+            }
 
     def _get_mask(self, pairs: tuple) -> np.ndarray:
         """
@@ -150,8 +150,12 @@ class ADPBulk:
         """
         create a name for the provided values based on their respective groups
         """
-        name = self.name_delim.join([
-                f"{self.groupby[i]}{self.group_delim}{pairs[i]}" for i in range(len(pairs))])
+        name = self.name_delim.join(
+            [
+                f"{self.groupby[i]}{self.group_delim}{pairs[i]}"
+                for i in range(len(pairs))
+            ]
+        )
         return name
 
     def _get_agg(self, mask: np.ndarray) -> np.ndarray:
@@ -177,9 +181,7 @@ class ADPBulk:
         """
         defines the meta values for the pairs
         """
-        values = {
-            self.groupby[idx]: pairs[idx] for idx in np.arange(len(self.groupby))
-            }
+        values = {self.groupby[idx]: pairs[idx] for idx in np.arange(len(self.groupby))}
         values["SampleName"] = self._get_name(pairs)
         return values
 
@@ -234,14 +236,13 @@ class ADPBulk:
                 pairs = tuple([pairs])
             if pairs in self.grouping_masks:
                 matrix.append(self._get_agg(self.grouping_masks[pairs]))
-        
+
         # stack all observations into single matrix
         matrix = np.vstack(matrix)
 
         self.matrix = pd.DataFrame(
-            matrix,
-            index=self.meta.SampleName.values,
-            columns=self._get_var())
+            matrix, index=self.meta.SampleName.values, columns=self._get_var()
+        )
 
         self._istransform = True
         return self.matrix
