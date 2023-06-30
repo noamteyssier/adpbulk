@@ -1,7 +1,7 @@
 """
 Class for Pseudobulking
 """
-from typing import Union, List
+from typing import Optional, Union, List
 import itertools as it
 import numpy as np
 import pandas as pd
@@ -18,6 +18,7 @@ class ADPBulk:
         name_delim: str = "-",
         group_delim: str = ".",
         use_raw: bool = False,
+        layer: Optional[str] = None,
     ):
         """
         Class of Pseudo-Bulking `AnnData` objects based on categorical variables
@@ -39,6 +40,8 @@ class ADPBulk:
                 example: 'cat{delim}value'
             use_raw: bool
                 Whether to use the `.raw` attribute on the `AnnData` object
+            layer: Optional[str]
+                The layer to use for the aggregation. If None, will use `.X`
         """
 
         self.agg_methods = {"sum": np.sum, "mean": np.mean, "median": np.median}
@@ -49,6 +52,7 @@ class ADPBulk:
         self.name_delim = name_delim
         self.group_delim = group_delim
         self.use_raw = use_raw
+        self.layer = layer
 
         self.group_idx = dict()
         self.groupings = list()
@@ -71,6 +75,7 @@ class ADPBulk:
         self._validate_groups()
         self._validate_method()
         self._validate_raw()
+        self._validate_layer()
 
     def _validate_anndata(self):
         """
@@ -112,6 +117,20 @@ class ADPBulk:
         if self.method not in self.agg_methods.keys():
             raise ValueError(
                 f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}"
+            )
+    def _validate_layer(self):
+        """
+        confirms that the layer is known and of expected size
+        """
+        if self.layer is None:
+            return
+        if self.layer not in self.adat.layers.keys():
+            raise KeyError(
+                f"Provided layer {self.layer} not in known layers {''.join(self.adat.layers)}"
+            )
+        if self.adat.layers[self.layer].shape != self.adat.X.shape:
+            raise ValueError(
+                f"Provided layer {self.layer} is not the same shape as the internal counts matrix"
             )
 
     def _validate_raw(self):
@@ -164,6 +183,8 @@ class ADPBulk:
         """
         if self.use_raw:
             mat = self.adat.raw.X[mask]
+        elif self.layer is not None:
+            mat = self.adat.layers[self.layer][mask]
         else:
             mat = self.adat.X[mask]
         return self.agg_methods[self.method](mat, axis=0)
