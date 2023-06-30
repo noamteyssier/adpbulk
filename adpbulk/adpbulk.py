@@ -118,6 +118,7 @@ class ADPBulk:
             raise ValueError(
                 f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}"
             )
+
     def _validate_layer(self):
         """
         confirms that the layer is known and of expected size
