@@ -40,6 +40,7 @@ def build_adat() -> ad.AnnData:
     ).set_index("symbol")
     adat = ad.AnnData(X=mat, obs=obs, var=var)
     adat_raw = ad.AnnData(X=raw, obs=obs, var=var)
+    adat.layers["test"] = mat * 10
     adat.raw = adat_raw
     return adat
 
@@ -72,6 +73,43 @@ def test_init_raw():
 
     # tests multiple group conditions
     _ = ADPBulk(adat, groupby=["cA", "cD"], use_raw=True)
+
+    assert True
+
+
+def test_init_layer():
+    """
+    tests whether the ADPBulk object can be instantiated correctly
+    """
+    adat = build_adat()
+
+    # tests singular group conditions
+    for group in adat.obs.columns:
+        _ = ADPBulk(adat, groupby=group, layer="test")
+
+    # tests multiple group conditions
+    _ = ADPBulk(adat, groupby=["cA", "cD"], layer="test")
+
+    assert True
+
+
+def test_init_layer_missing():
+    """
+    tests whether the ADPBulk object can be instantiated correctly
+    """
+    adat = build_adat()
+
+    # tests singular group conditions
+    for group in adat.obs.columns:
+        with pytest.raises(KeyError):
+            _ = ADPBulk(adat, groupby=group, layer="missing_layer")
+            assert False
+        assert True
+
+    # tests multiple group conditions
+    with pytest.raises(KeyError):
+        _ = ADPBulk(adat, groupby=["cA", "cD"], layer="missing_layer")
+        assert False
 
     assert True
 
