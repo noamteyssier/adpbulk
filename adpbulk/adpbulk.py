@@ -1,7 +1,7 @@
 """
 Class for Pseudobulking
 """
-from typing import Union, List
+from typing import Optional, Union, List
 import itertools as it
 import numpy as np
 import pandas as pd
@@ -11,13 +11,15 @@ from tqdm import tqdm
 
 class ADPBulk:
     def __init__(
-            self,
-            adat: ad.AnnData,
-            groupby: Union[List[str], str],
-            method: str = "sum",
-            name_delim: str = "-",
-            group_delim: str = ".",
-            use_raw: bool = False):
+        self,
+        adat: ad.AnnData,
+        groupby: Union[List[str], str],
+        method: str = "sum",
+        name_delim: str = "-",
+        group_delim: str = ".",
+        use_raw: bool = False,
+        layer: Optional[str] = None,
+    ):
         """
         Class of Pseudo-Bulking `AnnData` objects based on categorical variables
         found in the `.obs` attribute
@@ -38,12 +40,11 @@ class ADPBulk:
                 example: 'cat{delim}value'
             use_raw: bool
                 Whether to use the `.raw` attribute on the `AnnData` object
+            layer: Optional[str]
+                The layer to use for the aggregation. If None, will use `.X`
         """
 
-        self.agg_methods = {
-            "sum": np.sum,
-            "mean": np.mean,
-            "median": np.median}
+        self.agg_methods = {"sum": np.sum, "mean": np.mean, "median": np.median}
 
         self.adat = adat
         self.groupby = groupby
@@ -51,6 +52,7 @@ class ADPBulk:
         self.name_delim = name_delim
         self.group_delim = group_delim
         self.use_raw = use_raw
+        self.layer = layer
 
         self.group_idx = dict()
         self.groupings = list()
@@ -73,6 +75,7 @@ class ADPBulk:
         self._validate_groups()
         self._validate_method()
         self._validate_raw()
+        self._validate_layer()
 
     def _validate_anndata(self):
         """
@@ -113,7 +116,23 @@ class ADPBulk:
         """
         if self.method not in self.agg_methods.keys():
             raise ValueError(
-                f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}")
+                f"Provided method {self.method} not in known methods {''.join(self.agg_methods)}"
+            )
+
+    def _validate_layer(self):
+        """
+        confirms that the layer is known and of expected size
+        """
+        if self.layer is None:
+            return
+        if self.layer not in self.adat.layers.keys():
+            raise KeyError(
+                f"Provided layer {self.layer} not in known layers {''.join(self.adat.layers)}"
+            )
+        if self.adat.layers[self.layer].shape != self.adat.X.shape:
+            raise ValueError(
+                f"Provided layer {self.layer} is not the same shape as the internal counts matrix"
+            )
 
     def _validate_raw(self):
         """
@@ -122,8 +141,8 @@ class ADPBulk:
         """
         if self.use_raw and self.adat.raw is None:
             raise AttributeError(
-                "use_raw provided, but no raw field is found in AnnData")
-
+                "use_raw provided, but no raw field is found in AnnData"
+            )
 
     def _fit_indices(self):
         """
@@ -133,7 +152,8 @@ class ADPBulk:
             unique_values = np.unique(self.adat.obs[group].values)
             self.group_idx[group] = {
                 uv: set(np.flatnonzero(self.adat.obs[group].values == uv))
-                    for uv in tqdm(unique_values, desc=f"fitting indices: {group}")}
+                for uv in tqdm(unique_values, desc=f"fitting indices: {group}")
+            }
 
     def _get_mask(self, pairs: tuple) -> np.ndarray:
         """
@@ -150,8 +170,12 @@ class ADPBulk:
         """
         create a name for the provided values based on their respective groups
         """
-        name = self.name_delim.join([
-                f"{self.groupby[i]}{self.group_delim}{pairs[i]}" for i in range(len(pairs))])
+        name = self.name_delim.join(
+            [
+                f"{self.groupby[i]}{self.group_delim}{pairs[i]}"
+                for i in range(len(pairs))
+            ]
+        )
         return name
 
     def _get_agg(self, mask: np.ndarray) -> np.ndarray:
@@ -160,6 +184,8 @@ class ADPBulk:
         """
         if self.use_raw:
             mat = self.adat.raw.X[mask]
+        elif self.layer is not None:
+            mat = self.adat.layers[self.layer][mask]
         else:
             mat = self.adat.X[mask]
         return self.agg_methods[self.method](mat, axis=0)
@@ -177,9 +203,7 @@ class ADPBulk:
         """
         defines the meta values for the pairs
         """
-        values = {
-            self.groupby[idx]: pairs[idx] for idx in np.arange(len(self.groupby))
-            }
+        values = {self.groupby[idx]: pairs[idx] for idx in np.arange(len(self.groupby))}
         values["SampleName"] = self._get_name(pairs)
         return values
 
@@ -234,14 +258,13 @@ class ADPBulk:
                 pairs = tuple([pairs])
             if pairs in self.grouping_masks:
                 matrix.append(self._get_agg(self.grouping_masks[pairs]))
-        
+
         # stack all observations into single matrix
         matrix = np.vstack(matrix)
 
         self.matrix = pd.DataFrame(
-            matrix,
-            index=self.meta.SampleName.values,
-            columns=self._get_var())
+            matrix, index=self.meta.SampleName.values, columns=self._get_var()
+        )
 
         self._istransform = True
         return self.matrix
