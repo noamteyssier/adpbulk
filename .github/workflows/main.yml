@@ -13,6 +13,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@v4
@@ -23,11 +26,11 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         run: |
           uv python install ${{ matrix.python-version }}
-          uv venv
+          uv venv -p ${{ matrix.python-version }}
 
       - name: Install project
         run: |
-          uv sync --all-extras --dev
+          uv pip install -e .
 
       - name: Test with pytest
         run: |
