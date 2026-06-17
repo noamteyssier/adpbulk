@@ -1,5 +1,7 @@
 # adpbulk
 
+[![DOI](https://zenodo.org/badge/437088194.svg)](https://doi.org/10.5281/zenodo.20736457)
+
 # Summary
 Performs pseudobulking of an `AnnData` object based on columns available in the `.obs` dataframe. This was originally intended to be used to pseudo-bulk single-cell RNA-seq data to higher order combinations of the data as to use existing RNA-seq differential expression tools such as `edgeR` and `DESeq2`. An example usage of this would be pseudobulking cells based on their cluster, sample of origin, or CRISPRi guide identity. This is intended to work on both individual categories (i.e. one of the examples) or combinations of categories (two of the three, etc.)
 
